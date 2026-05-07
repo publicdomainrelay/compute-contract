@@ -56,7 +56,7 @@ currency: 'USDC'
 prepay: true
 ```
 
-- Alice CCBP
+- Alice CCBAP
 
 ```yaml
 ---
@@ -72,19 +72,26 @@ txid: "${TXID}"
 - Alice CCBA
 
 ```yaml
----
-$type: 'com.publicdomainrelay.ccba.simple.v.0.0.0"
-embed:
-  $type: "com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0"
-  record:
-    cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
-    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/31983y1jkdhsa"
-payment:
+repo: did:plc:alice0000000000000000000
+collection: com.publicdomainrelay.ccba
+record:
+  $type: com.publicdomainrelay.ccba
   embed:
-    $type: "com.publicdomainrelay.ccbap.simple.abstract.manifest.v.0.0.0"
+    $type: com.publicdomainrelay.ccrfp
     record:
-      cid: "k78sfdjk01jek1j23012j31i2l3jkjdsh9sjdkfl1jh4j1j3l2k1jn9djlk"
-      uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3masdfj1301jl"
+      cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
+      uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
+  bid:
+    $type: com.publicdomainrelay.ccb
+    record:
+      cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
+      uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/31983y1jkdhsa"
+  payment:
+    embed:
+      $type: com.publicdomainrelay.ccbap
+      record:
+        cid: "k78sfdjk01jek1j23012j31i2l3jkjdsh9sjdkfl1jh4j1j3l2k1jn9djlk"
+        uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3masdfj1301jl"
 ```
 
 ## Examples
@@ -139,7 +146,7 @@ goat get $(goat xrpc procedure @pds com.atproto.repo.createRecord - < request.js
 ## Testing
 
 ```bash
-$ (set -x; for file in $(find examples/data/spin-droplet-0001/ -type f -name request.json); do goat xrpc procedure @pds com.atproto.repo.createRecord - < "${file}" | tee "$(dirname "${file}")/response.json" | yq -P; done)
+$ (set -x; for dir in $(ls examples/data/spin-droplet-0001/); do file="examples/data/spin-droplet-0001/${dir}/request.json"; goat xrpc procedure @pds com.atproto.repo.createRecord - < "${file}" | tee "$(dirname "${file}")/response.json" | yq -P; done)
 ++ find examples/data/spin-droplet-0001/ -type f -name request.json
 + for file in $(find examples/data/spin-droplet-0001/ -type f -name request.json)
 + goat xrpc procedure @pds com.atproto.repo.createRecord -

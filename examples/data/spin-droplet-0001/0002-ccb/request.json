@@ -1,0 +1,17 @@
+{
+  "repo": "did:plc:5svqtrhheairglgiiyvutzik",
+  "collection": "com.publicdomainrelay.ccb",
+  "record": {
+    "$type": "com.publicdomainrelay.ccb",
+    "embed": {
+      "$type": "com.publicdomainrelay.ccrfp",
+      "record": {
+        "cid": "bafyreiblivinfkc2hqhoe367b5ggdlieyviyun652g7qxn2p2rl4orfpsq",
+        "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mlabxf5xxg2t"
+      }
+    },
+    "cost": 4.00,
+    "currency": "USDC",
+    "prepay": true
+  }
+}
