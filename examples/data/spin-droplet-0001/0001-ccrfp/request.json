@@ -1,0 +1,11 @@
+{
+  "repo": "did:plc:5svqtrhheairglgiiyvutzik",
+  "collection": "com.publicdomainrelay.ccrfp",
+  "record": {
+    "$type": "com.publicdomainrelay.ccrfp",
+    "cpus": 1,
+    "mem": "512M",
+    "disk": "10G",
+    "network": "500G"
+  }
+}

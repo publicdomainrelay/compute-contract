@@ -136,6 +136,24 @@ goat get $(goat xrpc procedure @pds com.atproto.repo.createRecord - < request.js
 }
 ```
 
+## Testing
+
+```bash
+$ (set -x; for file in $(find examples/data/spin-droplet-0001/ -type f -name request.json); do goat xrpc procedure @pds com.atproto.repo.createRecord - < "${file}" | tee "$(dirname "${file}")/response.json" | yq -P; done)
+++ find examples/data/spin-droplet-0001/ -type f -name request.json
++ for file in $(find examples/data/spin-droplet-0001/ -type f -name request.json)
++ goat xrpc procedure @pds com.atproto.repo.createRecord -
++ yq -P
+++ dirname examples/data/spin-droplet-0001/0001-ccrfp/request.json
++ tee examples/data/spin-droplet-0001/0001-ccrfp/response.json
+uri: at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mlabxf5xxg2t
+cid: bafyreiblivinfkc2hqhoe367b5ggdlieyviyun652g7qxn2p2rl4orfpsq
+commit:
+  cid: bafyreibszjqfmvk6nbrdofqjkwvrvcdscphoidun6yxrtm55quhaylj62a
+  rev: 3mlabxf65sw2t
+validationStatus: unknown
+```
+
 ## Notes
 
 - https://keripy.readthedocs.io/en/latest/ref/getting_started/#receipts
