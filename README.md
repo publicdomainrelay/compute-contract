@@ -87,6 +87,55 @@ payment:
       uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3masdfj1301jl"
 ```
 
+## Examples
+
+Read CCRFPs from the firehose
+
+```bash
+uv run ~/src/digitalocean-labs/droplet-oidc-poc/src/workload_identity_oauth_reverse_proxy/firehose_to_ndjson.py alice.example.com | jq
+```
+
+**request.json**
+
+```json
+{
+  "repo": "did:plc:alice0000000000000000000",
+  "collection": "com.publicdomainrelay.ccrfp",
+  "record": {
+    "$type": "com.publicdomainrelay.ccrfp",
+    "cpus": 1,
+    "mem": "512M",
+    "disk": "10G",
+    "network": "500G"
+  }
+}
+```
+
+```bash
+goat get $(goat xrpc procedure @pds com.atproto.repo.createRecord - < request.json  | tee response.json | jq -r '.uri')
+```
+
+```json
+{
+  "repo": "did:plc:alice0000000000000000000",
+  "handle": "alice.example.com",
+  "seq": 29814868114,
+  "time": "2026-05-07T03:26:47.466Z",
+  "action": "create",
+  "collection": "com.publicdomainrelay.ccrfp",
+  "rkey": "3mlabgut5c62t",
+  "uri": "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp/3mlabgut5c62t",
+  "record_type": "unknown",
+  "record": {
+    "mem": "512M",
+    "cpus": 1,
+    "disk": "10G",
+    "$type": "com.publicdomainrelay.ccrfp",
+    "network": "500G"
+  }
+}
+```
+
 ## Notes
 
 - https://keripy.readthedocs.io/en/latest/ref/getting_started/#receipts
