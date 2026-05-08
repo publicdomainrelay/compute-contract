@@ -74,13 +74,16 @@ bid:
   frequency: 'monthly'
   prepay: true
   x402:
-    base_url: 'https://payment.builder.bob.example.com/{at}/{cid}'
-    # This says, use the uri and cid of this ccb in the URL path params
-    path:
-      ccb-uri: '$this.uri'
-      ccb-cid: '$this.cid'
+    base_url: 'https://builder.bob.example.com/ccr/{at}/{cid}'
+    # TODO This says, use the uri and cid of this ccb in the URL path params
+    # path:
+    #   at: '$this.uri'
+    #   cid: '$this.cid'
 # Workload Identity Federation details for when service comes up to get secrets
-wif: {}
+wif:
+  issuer_uri: 'https://builder.bob.example.com'
+  subject:
+    format: 'ccr-cid:{cid}:ccr-at:{at}'
 ```
 
 - Alice chooses and pays
@@ -128,7 +131,7 @@ SOL     0.00
 ```yaml
 ---
 $type: "com.publicdomainrelay.ccr.simple"
-ccrfp:
+rfp:
   $type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
   record:
     cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
