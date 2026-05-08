@@ -6,8 +6,8 @@
     "embed": {
       "$type": "com.publicdomainrelay.ccrfp",
       "record": {
-        "cid": "bafyreihw7v4dvu2tjj44ddopdendvunfboqdl2dxdhbtrqrjry4b2giq3a",
-        "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mlcwbifojy2d#info"
+        "cid": "bafyreidrdtujk6mapisjy43os2c3u24pkq6vqyw4yofd37s4igybceuv6q",
+        "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mld4aiz5dr2m"
       }
     },
     "bid": {
@@ -16,14 +16,16 @@
       "frequency": "monthly",
       "prepay": true,
       "x402": {
-        "base_url": "https://builder.bob.example.com/ccr/{at}/{cid}"
+        "base_url": "https://compute-contract.johnandersen777.bsky.social.fedproxy.com/ccr/{at}/{cid}"
       }
     },
     "wif": {
-      "issuer_uri": "https://builder.bob.example.com",
-      "subject": {
-        "format": "ccr-cid:{cid}:ccr-at:{at}"
-      }
+      "issuer_uri": "https://droplet-oidc.its1337.com",
+      "to_issue": "exchange-custom-droplet-oidc-poc",
+      "token_path": "/root/secrets/digitalocean.com/serviceaccount/token",
+      "url_path": "/root/secrets/digitalocean.com/serviceaccount/base_url",
+      "url_route": "/v1/oidc/issue",
+      "subject": "actx:4959ec0923473bf22bddd7bec2caf58a294ee007:plc:{did-plc-key}:role:{role}"
     }
   }
 }

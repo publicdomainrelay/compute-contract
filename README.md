@@ -46,6 +46,7 @@ network: '500G'
 location:
   country: 'USA'
   region: 'west'
+role: 'my-cool-role'
 user_data: |
   #cloud-init
   # Setup opkssh
@@ -69,21 +70,19 @@ embed:
     cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
     uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
 bid:
-  cost: 4.00
-  currency: 'USDC'
-  frequency: 'monthly'
+  cost: 4
+  currency: USDC
+  frequency: monthly
   prepay: true
   x402:
-    base_url: 'https://builder.bob.example.com/ccr/{at}/{cid}'
-    # TODO This says, use the uri and cid of this ccb in the URL path params
-    # path:
-    #   at: '$this.uri'
-    #   cid: '$this.cid'
-# Workload Identity Federation details for when service comes up to get secrets
+    base_url: https://compute-contract.johnandersen777.bsky.social.fedproxy.com/ccr/{at}/{cid}
 wif:
-  issuer_uri: 'https://builder.bob.example.com'
-  subject:
-    format: 'ccr-cid:{cid}:ccr-at:{at}'
+  issuer_uri: https://droplet-oidc.its1337.com
+  to_issue: exchange-custom-droplet-oidc-poc
+  token_path: /root/secrets/digitalocean.com/serviceaccount/token
+  url_path: /root/secrets/digitalocean.com/serviceaccount/base_url
+  url_route: /v1/oidc/issue
+  subject: actx:4959ec0923473bf22bddd7bec2caf58a294ee007:plc:{did-plc-key}:role:{role}
 ```
 
 - Alice chooses and pays

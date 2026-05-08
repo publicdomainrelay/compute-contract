@@ -11,6 +11,7 @@
       "country": "USA",
       "region": "west"
     },
-    "user_data": "#cloud-init\n# Setup opkssh\n"
+    "role": "my-cool-role",
+    "user_data": "#cloud-init\n# Setup opkssh, preform token exchange for alice's atproto account workload identity reverse proxy token then create com.fedproxy.sshPublicKey record then start ssh -R\n"
   }
 }
