@@ -39,6 +39,9 @@ cpus: 1
 mem: '512M'
 disk: '10G'
 network: '500G'
+location:
+  country: 'USA'
+  region: 'west'
 user_data: |
   #cloud-init
   # Setup opkssh
@@ -61,7 +64,7 @@ embed:
   record:
     cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
     uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
-payment:
+bid:
   cost: 4.00
   currency: 'USDC'
   frequency: 'monthly'
