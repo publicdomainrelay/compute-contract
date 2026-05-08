@@ -6,6 +6,11 @@
     "cpus": 1,
     "mem": "512M",
     "disk": "10G",
-    "network": "500G"
+    "network": "500G",
+    "location": {
+      "country": "USA",
+      "region": "west"
+    },
+    "user_data": "#cloud-init\n# Setup opkssh\n"
   }
 }

@@ -6,12 +6,24 @@
     "embed": {
       "$type": "com.publicdomainrelay.ccrfp",
       "record": {
-        "cid": "bafyreiblivinfkc2hqhoe367b5ggdlieyviyun652g7qxn2p2rl4orfpsq",
-        "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mlabxf5xxg2t"
+        "cid": "bafyreihw7v4dvu2tjj44ddopdendvunfboqdl2dxdhbtrqrjry4b2giq3a",
+        "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccrfp/3mlcwbifojy2d#info"
       }
     },
-    "cost": 4.00,
-    "currency": "USDC",
-    "prepay": true
+    "bid": {
+      "cost": 4,
+      "currency": "USDC",
+      "frequency": "monthly",
+      "prepay": true,
+      "x402": {
+        "base_url": "https://builder.bob.example.com/ccr/{at}/{cid}"
+      }
+    },
+    "wif": {
+      "issuer_uri": "https://builder.bob.example.com",
+      "subject": {
+        "format": "ccr-cid:{cid}:ccr-at:{at}"
+      }
+    }
   }
 }
