@@ -28,6 +28,10 @@
   - The event is the `heartbeat=0` event. The compute contract is now complete.
 - Compensation can be tied to these heartbeat events.
 
+## References
+
+- https://github.com/publicdomainrelay/compute-contract-provider-relay-digitalocean
+
 ## Data Formats
 
 - Alice CCRFP manifest
