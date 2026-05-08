@@ -39,59 +39,124 @@ cpus: 1
 mem: '512M'
 disk: '10G'
 network: '500G'
+user_data: |
+  #cloud-init
+  # Setup opkssh
+```
+
+- Alice watches for bids
+  - **TODO** Filter by `embed.record.cid && uri` using jq
+
+```bash
+timeout 15s uv run ~/src/digitalocean-labs/droplet-oidc-poc/src/workload_identity_oauth_reverse_proxy/firehose_to_ndjson.py | jq 'select(.collection | startswith("com.publicdomainrelay."))'
 ```
 
 - Bob CCB
 
 ```yaml
 ---
-$type: "com.publicdomainrelay.ccb.simple.time.monthly.v.0.0.0"
+$type: "com.publicdomainrelay.ccb.simple"
 embed:
   $type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
   record:
     cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
     uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
-cost: 4.00
-currency: 'USDC'
-prepay: true
+payment:
+  cost: 4.00
+  currency: 'USDC'
+  frequency: 'monthly'
+  prepay: true
+  x402:
+    base_url: 'https://payment.builder.bob.example.com/{at}/{cid}'
+    # This says, use the uri and cid of this ccb in the URL path params
+    path:
+      ccb-uri: '$this.uri'
+      ccb-cid: '$this.cid'
+# Workload Identity Federation details for when service comes up to get secrets
+wif: {}
 ```
 
-- Alice CCBAP
+- Alice chooses and pays
+
+```bash
+$ npx awal x402 pay https://spindle-0001.johnandersen777.bsky.social.fedproxy.com/weather
+✓ Request completed (HTTP 200)
+
+Response:
+{
+  "report": {
+    "weather": "sunny",
+    "temperature": 70
+  }
+}
+$ npx awal auth login johnandersenpdx@gmail.com
+$ https://github.com/googleworkspace/cli get emails
+$ npx awal auth verify $CODE
+# echo npx awal@latest show
+# ✓ Wallet window opened
+$ npx awal address
+EVM (Base): 0x9012310923809128309182903812093801923211
+Solana: Fs10238091283091283098109283091283928010101
+$ npx awal balance
+
+Base
+────────────────────────
+USDC    5.00
+ETH     0.00
+
+Polygon
+────────────────────────
+USDC    0.00
+POL     0.00
+
+Solana
+────────────────────────
+USDC    0.00
+SOL     0.00
+```
+
+- Bob CCR (Compute Contract Receipt) at createRecord response returned from
+  payment.base_url on x402 success which resolves to this record:
+
+```yaml
+---
+$type: "com.publicdomainrelay.ccr.simple"
+ccrfp:
+  $type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
+  record:
+    cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
+bid:
+  $type: com.publicdomainrelay.ccb
+  record:
+    cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/31983y1jkdhsa"
+```
+
+- Bob CCR (Compute Contract Event) at createRecord response returned from
+  payment.base_url on x402 success which resolves to this record:
 
 ```yaml
 ---
 $type: 'com.publicdomainrelay.ccbap.simple.v.0.0.0"
-embed:
-  $type: "com.publicdomainrelay.ccb.simple.time.monthly.v.0.0.0"
+ccrfp:
+  $type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
+  record:
+    cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
+bid:
+  $type: com.publicdomainrelay.ccb
   record:
     cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
-    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/31983y1jkdhsa"
-txid: "${TXID}"
-```
-
-- Alice CCBA
-
-```yaml
-repo: did:plc:alice0000000000000000000
-collection: com.publicdomainrelay.ccba
-record:
-  $type: com.publicdomainrelay.ccba
-  embed:
-    $type: com.publicdomainrelay.ccrfp
-    record:
-      cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
-      uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3m21312k9jnkl"
-  bid:
-    $type: com.publicdomainrelay.ccb
-    record:
-      cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
-      uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/31983y1jkdhsa"
-  payment:
-    embed:
-      $type: com.publicdomainrelay.ccbap
-      record:
-        cid: "k78sfdjk01jek1j23012j31i2l3jkjdsh9sjdkfl1jh4j1j3l2k1jn9djlk"
-        uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp.simple.abstract.manifest.v.0.0.0/3masdfj1301jl"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccb/js9df8jo2j32l"
+ccr:
+  $type: com.publicdomainrelay.ccr
+  record:
+    cid: "dfsknml1823j12k3m1l2jn31288j12k3jkl3n439j41pk32m8sdjfoisdjf"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccr/3kjsdf98sdf89"
+compute:
+  # The IPv4 address of the provisioned compute
+  ipv4: '1.1.1.1'
 ```
 
 ## Examples
