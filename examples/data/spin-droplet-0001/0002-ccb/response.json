@@ -1,9 +1,9 @@
 {
-  "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccb/3mld4chetvx23",
-  "cid": "bafyreihb3nbdnrsmdpovctuyhizqifnhqinmzx3ehqd43pqkud2eytbdgy",
+  "uri": "at://did:plc:5svqtrhheairglgiiyvutzik/com.publicdomainrelay.ccb/3mlf7ttrffk23",
+  "cid": "bafyreicwemur3nasntbaxc3elkrwplpvonhgklakjtlreube3cxkzscu2m",
   "commit": {
-    "cid": "bafyreiag5nq25mjoc6d3rhonnonjtwmult5x6fcrhogtm5ovjhn4i6anly",
-    "rev": "3mld4chezrh23"
+    "cid": "bafyreigqay2yscuj24anzhdltpudu6k5dw3ydur4atipekzjpvolsfqs4e",
+    "rev": "3mlf7ttrkbs23"
   },
   "validationStatus": "unknown"
 }

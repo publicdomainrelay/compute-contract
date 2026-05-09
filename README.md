@@ -38,7 +38,7 @@
 
 ```yaml
 ---
-$type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
+$type: "com.publicdomainrelay.ccrfp"
 cpus: 1
 mem: '512M'
 disk: '10G'
@@ -49,7 +49,157 @@ location:
 role: 'my-cool-role'
 user_data: |
   #cloud-init
-  # Setup opkssh
+  packages:
+    - openssh-client
+    - python3
+  write_files:
+    - path: /var/www/8080/index.html
+      owner: root:root
+      permissions: '0644'
+      content: |
+        Hello World!
+
+    - path: /etc/systemd/system/python-http@.service
+      owner: root:root
+      permissions: '0644'
+      content: |
+        [Unit]
+        Description=Simple Python HTTP server on port %i
+        After=network.target
+        Wants=network.target
+
+        [Service]
+        Type=simple
+        User=root
+        WorkingDirectory=/var/www/%i
+        Environment=PYTHONUNBUFFERED=1
+        ExecStart=/usr/bin/python3 -m http.server %i --bind 127.0.0.1
+        Restart=always
+        RestartSec=5
+        TimeoutStopSec=10
+        StandardOutput=journal
+        StandardError=journal
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - path: /usr/local/bin/ssh-reverse-tunnel-wrapper
+      owner: root:root
+      permissions: '0700'
+      content: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        INSTANCE="${1:-}"
+        [ -n "$INSTANCE" ] || { echo "Missing instance" >&2; exit 2; }
+
+        # Expect INSTANCE to be SERVICE.HANDLE (HANDLE may contain dots)
+        SERVICE="${INSTANCE%%.*}"
+        HANDLE="${INSTANCE#*.}"
+
+        if [ -z "$SERVICE" ] || [ "$SERVICE" = "$HANDLE" ]; then
+          echo "Instance must be in the form SERVICE.HANDLE (e.g. myname.aliceoa.bsky.social)" >&2
+          exit 2
+        fi
+
+        REMOTE_SSH="${HANDLE}@fedproxy.com"
+        REMOTE_BIND="${SERVICE}:80:127.0.0.1:8080"
+
+        exec /usr/bin/ssh -NnT -p 2222 \
+          -i /root/.ssh/id_ed25519 \
+          -o UserKnownHostsFile=/dev/null \
+          -o StrictHostKeyChecking=no \
+          -o PasswordAuthentication=no \
+          -o ExitOnForwardFailure=yes \
+          -R "${REMOTE_BIND}" \
+          "${REMOTE_SSH}"
+
+    - path: /etc/systemd/system/fedproxy@.service
+      owner: root:root
+      permissions: '0644'
+      content: |
+        [Unit]
+        Description=SSH reverse tunnel for %i (SERVICE.HANDLE -> %i@fedproxy)
+        After=network-online.target
+        Wants=network-online.target
+        StartLimitIntervalSec=60
+        StartLimitBurst=5
+
+        [Service]
+        Type=simple
+        User=root
+        WorkingDirectory=/root
+        Environment=INSTANCE=%i
+        ExecStart=/usr/local/bin/ssh-reverse-tunnel-wrapper "%i"
+        Restart=always
+        RestartSec=5
+        TimeoutStopSec=20
+        StandardOutput=journal
+        StandardError=journal
+
+        [Install]
+        WantedBy=multi-user.target
+  runcmd:
+  - |
+      # NOTE these run as sh! not bash!
+
+      # TODO This should not be using set -x because tokens get logged
+      set -x
+
+      ATPRP_URL="https://rp.fedproxy.com"
+      # https://pdsls.dev/at://did:plc:5svqtrhheairglgiiyvutzik/com.fedproxy.rbac/3mlewidctvt2n
+      HANDLE="johnandersen777.bsky.social"
+      DID_PLC_KEY="5svqtrhheairglgiiyvutzik"
+      DID_PLC="did:plc:${DID_PLC_KEY}"
+
+      mkdir -p /root/.ssh
+      chmod 660 /root/.ssh
+      yes | ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519
+      SSH_PUB=$(cat /root/.ssh/id_ed25519.pub)
+
+      # TODO Make sure CCB is ingestable
+
+      URL=$(cat /root/secrets/digitalocean.com/serviceaccount/base_url)
+      TEAM_UUID=$(cat /root/secrets/digitalocean.com/serviceaccount/team_uuid)
+      ID_TOKEN=$(cat /root/secrets/digitalocean.com/serviceaccount/token)
+
+      SUBJECT="actx:${TEAM_UUID}:plc:${DID_PLC_KEY}:role:my-cool-role"
+
+      SERVICE="$(openssl rand -hex 4)"
+
+      TOKEN=$(jq -n -c \
+          --arg aud "api://ATProto?actx=${DID_PLC}" \
+          --arg sub "${SUBJECT}" \
+          --arg ttl 3600 \
+          '{aud: $aud, sub: $sub, ttl: ($ttl | fromjson)}' | \
+        curl -sf \
+          -H "Authorization: Bearer ${ID_TOKEN}" \
+          -d@- \
+          "${URL}/v1/oidc/issue" \
+          | jq -r .token)
+
+      curl -s \
+        -X POST \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d '{
+              "repo": "'"${DID_PLC}"'",
+              "collection": "com.fedproxy.sshPublicKey",
+              "record": {
+                "$type": "com.fedproxy.sshPublicKey",
+                "key": "'"${SSH_PUB}"'",
+                "service": "'"${SERVICE}"'",
+                "name": "'"${SERVICE}"'",
+                "createdAt": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'"
+              }
+            }' \
+        "${ATPRP_URL}/xrpc/com.atproto.repo.createRecord" | jq
+
+      mkdir -p /var/www/8080
+      chown root:root /var/www/8080
+      systemctl daemon-reload
+      systemctl enable --now python-http@8080.service
+      systemctl enable --now "fedproxy@${SERVICE}.${HANDLE}.service"
 ```
 
 - Alice watches for bids
@@ -169,6 +319,16 @@ compute:
 ```
 
 ## Examples
+
+```bash
+file="examples/data/spin-droplet-0001/0001-ccrfp/request.json"; goat xrpc procedure @pds com.atproto.repo.createRecord - < "${file}" | tee "$(dirname "${file}")/response.json" | jq
+
+IN="$(cat examples/data/spin-droplet-0001/0001-ccrfp/response.json | jq -c)"; OUT_OLD="$(cat examples/data/spin-droplet-0001/0002-ccb/request.json | jq -c)"; echo "${OUT_OLD}" | jq --arg uri "$(echo "${IN}" | jq -r '.uri')" --arg cid "$(echo "${IN}" | jq -r '.cid')" '.record.embed.record.uri = $uri | .record.embed.record.cid = $cid' | tee examples/data/spin-droplet-0001/0002-ccb/request.json;
+
+file="examples/data/spin-droplet-0001/0002-ccb/request.json"; goat xrpc procedure @pds com.atproto.repo.createRecord - < "${file}" | tee "$(dirname "${file}")/response.json" | jq
+
+curl "https://compute-contract.johnandersen777.bsky.social.fedproxy.com/ccr/$(cat examples/data/spin-droplet-0001/0002-ccb/response.json | jq -r .uri)/$(cat examples/data/spin-droplet-0001/0002-ccb/response.json | jq -r .cid)" | jq
+```
 
 Read CCRFPs from the firehose
 
