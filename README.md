@@ -13,8 +13,14 @@
 - Alice makes her CCRFP manifest available to the network
 - Bob and Eve each issue a Compute Contract Bid (CCB) against the CCRFP
 - Alice's policy engine sees that she's denounced Eve and vouched for Bob
+- Alice issues a Compute Contract Bid Accept (CCBA) against Bob's CCB.
 - Alice issues a x402 payment to Bob per info provided in his CCB.
+  - Using the CCBA AT URI and CID.
+- Bob issues a Compute Contract Receipt (CCR) over the CCRFP, CCB, and CCBA
 - Bob builds to the CCRFP manifest's spec
+
+## TODO
+
 - Bob makes a Compute Contract Event (CCE) and makes it available to the network
   - The event is the `heartbeat=1` event. Indicating the compute has entered a
     state where it is now functional.
