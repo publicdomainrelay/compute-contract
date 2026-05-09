@@ -1,5 +1,7 @@
 # Compute Contract
 
+> https://john.leaflet.pub/3mletyxaie22o
+
 - Alice, Bob, and Eve are on the network
 - Alice wants to issue a Compute Contract Request For Proposal (CCRFP)
   - Alice's CCRFP will state she wants an OpenCode instance
@@ -11,9 +13,7 @@
 - Alice makes her CCRFP manifest available to the network
 - Bob and Eve each issue a Compute Contract Bid (CCB) against the CCRFP
 - Alice's policy engine sees that she's denounced Eve and vouched for Bob
-- (Optionally) Alice issues a Compute Contract Bid Accept Payment (CCBAP)
-  against Bob's CCB.
-- Alice issues a Compute Contract Bid Accept (CCBA) against Bob's CCB
+- Alice issues a x402 payment to Bob per info provided in his CCB.
 - Bob builds to the CCRFP manifest's spec
 - Bob makes a Compute Contract Event (CCE) and makes it available to the network
   - The event is the `heartbeat=1` event. Indicating the compute has entered a
@@ -206,7 +206,7 @@ user_data: |
   - **TODO** Filter by `embed.record.cid && uri` using jq
 
 ```bash
-timeout 15s uv run ~/src/digitalocean-labs/droplet-oidc-poc/src/workload_identity_oauth_reverse_proxy/firehose_to_ndjson.py | jq 'select(.collection | startswith("com.publicdomainrelay."))'
+timeout 15s uv run ~/src/digitalocean-labs/droplet-oidc-poc/src/workload_identity_oauth_reverse_proxy/firehose_to_ndjson.py | jq 'select(.collection | startswith("com.publicdomainrelay.ccb"))'
 ```
 
 - Bob CCB
