@@ -324,6 +324,112 @@ compute:
   ipv4: '1.1.1.1'
 ```
 
+## Generic: Marketplace Exchange Wrappers (one level up)
+
+The `cc`-prefixed records carry compute-specific data for the marketplace exchange. The generic marketplace envelopes below — `rfp`, `bid`, `bid.accept`, `receipt` — wrap that compute-specific payload via strongRefs (`{uri, cid}`), so the same outer protocol can be reused for non-compute marketplaces by swapping the inner `cc*` record for some other domain-specific record type.
+
+Layering:
+
+```
+com.publicdomainrelay.rfp          ──strongRef──▶ com.publicdomainrelay.ccrfp
+com.publicdomainrelay.bid          ──strongRef──▶ com.publicdomainrelay.ccb
+       └── rfp ──strongRef──▶ com.publicdomainrelay.rfp
+com.publicdomainrelay.bid.accept   ──strongRef──▶ com.publicdomainrelay.bid
+       └── rfp ──strongRef──▶ com.publicdomainrelay.rfp
+com.publicdomainrelay.receipt      ──strongRef──▶ com.publicdomainrelay.ccr
+       ├── rfp        ──strongRef──▶ com.publicdomainrelay.rfp
+       ├── bid        ──strongRef──▶ com.publicdomainrelay.bid
+       └── bid.accept ──strongRef──▶ com.publicdomainrelay.bid.accept
+```
+
+### Alice RFP (wraps CCRFP)
+
+```yaml
+---
+$type: "com.publicdomainrelay.rfp.v.0.0.0"
+domain: "compute"
+payload:
+  $type: "com.publicdomainrelay.ccrfp.simple.machine.manifest.v.0.0.0"
+  record:
+    cid: "asdlfkjsdlkfjlasdkfqeuhoj134j3lk43lk2j4308j43n4l3n2lk3j4l32"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccrfp/3m21312k9jnkl"
+```
+
+### Bob Bid (wraps CCB, refs RFP)
+
+```yaml
+---
+$type: "com.publicdomainrelay.bid.v.0.0.0"
+rfp:
+  $type: "com.publicdomainrelay.rfp.v.0.0.0"
+  record:
+    cid: "rfpcid000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.rfp/3m21312k9jnkl"
+payload:
+  $type: "com.publicdomainrelay.ccb.simple.v.0.0.0"
+  record:
+    cid: "7hvb3njk42348nlk4jh5njhlkjhkdfjsdbfsjfje92yh7yhd98sf98d0sus"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccb/js9df8jo2j32l"
+```
+
+### Alice Bid Accept (refs Bid + RFP)
+
+```yaml
+---
+$type: "com.publicdomainrelay.bid.accept.v.0.0.0"
+rfp:
+  $type: "com.publicdomainrelay.rfp.v.0.0.0"
+  record:
+    cid: "rfpcid000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.rfp/3m21312k9jnkl"
+bid:
+  $type: "com.publicdomainrelay.bid.v.0.0.0"
+  record:
+    cid: "bidcid000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.bid/3kjsdf98sdf89"
+# Optional inline reference to the compute-specific accept payload, if present.
+# When omitted, accept defers fully to the referenced bid's compute-specific terms.
+payload:
+  $type: "com.publicdomainrelay.ccbap.simple.v.0.0.0"
+  record:
+    cid: "ccbapcid0000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.ccbap/3lkjasdf32j"
+```
+
+### Bob Receipt (refs RFP + Bid + Bid Accept, wraps CCR)
+
+```yaml
+---
+$type: "com.publicdomainrelay.receipt.v.0.0.0"
+rfp:
+  $type: "com.publicdomainrelay.rfp.v.0.0.0"
+  record:
+    cid: "rfpcid000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.rfp/3m21312k9jnkl"
+bid:
+  $type: "com.publicdomainrelay.bid.v.0.0.0"
+  record:
+    cid: "bidcid000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.bid/js9df8jo2j32l"
+bid.accept:
+  $type: "com.publicdomainrelay.bid.accept.v.0.0.0"
+  record:
+    cid: "bacid0000000000000000000000000000000000000000000000000000000"
+    uri: "at://did:plc:alice0000000000000000000/com.publicdomainrelay.bid.accept/3lkjasdf32j"
+payload:
+  $type: "com.publicdomainrelay.ccr.simple.v.0.0.0"
+  record:
+    cid: "dfsknml1823j12k3m1l2jn31288j12k3jkl3n439j41pk32m8sdjfoisdjf"
+    uri: "at://did:plc:bob000000000000000000000/com.publicdomainrelay.ccr/3kjsdf98sdf89"
+```
+
+### Notes on the abstraction
+
+- `domain` (e.g. `"compute"`) on the outer `rfp` lets policy engines and indexers route to the right marketplace verticals without parsing inner payloads.
+- Every cross-record link is a strongRef (`{uri, cid}`) so the chain is content-addressed end-to-end: tampering with any inner record invalidates the receipt.
+- The compute-specific quantities (cpus / mem / disk / network / location / `user_data`, cost / currency / x402 base_url, the provisioned ipv4) stay where they are today inside the `cc*` records — the outer envelopes only carry references and routing metadata.
+- Non-compute marketplaces (e.g. storage, model inference, bandwidth) reuse `rfp` / `bid` / `bid.accept` / `receipt` unchanged and define their own `xx*`-prefixed payload lexicons.
+
 ## Examples
 
 ```bash
