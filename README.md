@@ -326,6 +326,19 @@ compute:
 
 ## Generic: Marketplace Exchange Wrappers (one level up)
 
+- TODO
+  - https://attested.network/scenarios.html
+    - Use attested.network `"$type": "com.atproto.repo.strongRef",` as best practice here
+    - Also use attested.network for payments eventually
+      - Step 1 for this would be to have the payment strongRef in the CCB reference https://attested.network/brokers.html
+  - https://tangled.org/tranquil.farm/tranquil-pds/blob/main/docs/install-kubernetes.md
+    - https://www.kcp.io abstraction to spin on CCRFPs
+    - https://tangled.org/tranquil.farm/tranquil-pds/blob/main/crates/tranquil-api/src/delegation.rs
+  - Also proxy `*.service.handle.fedproxy.com` so to `service.handle.fedproxy.com` so that the service can reverse proxy futher 🐢
+- Notes
+  - https://zicklag.leaflet.pub/3mjrvb5pul224
+  - https://nelind.leaflet.pub/3mljaycxcqc2h
+
 The `cc`-prefixed records carry compute-specific data for the marketplace exchange. The generic marketplace envelopes below — `rfp`, `bid`, `bid.accept`, `receipt` — wrap that compute-specific payload via strongRefs (`{uri, cid}`), so the same outer protocol can be reused for non-compute marketplaces by swapping the inner `cc*` record for some other domain-specific record type.
 
 Layering:
